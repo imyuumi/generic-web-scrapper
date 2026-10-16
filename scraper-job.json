@@ -1,0 +1,128 @@
+{
+  "_documentation": {
+    "purpose": "Working starter job for public Singapore pet-grooming listings. Change the source and extraction settings in the browser interface for other directories.",
+    "source": "https://furvisor.com/cities/singapore/grooming",
+    "safety": "Public pages only; robots.txt remains enabled and requests are rate limited."
+  },
+  "name": "singapore-pet-groomers-furvisor",
+  "variables": {
+    "query": "dental clinics",
+    "location": "Singapore"
+  },
+  "target_count": 10,
+  "allow_partial": true,
+  "output": {
+    "format": "csv",
+    "path": "scraped-results.csv"
+  },
+  "crawler": {
+    "user_agent": "ConfigurablePublicDataCollector/1.0",
+    "obey_robots": true,
+    "delay_seconds": 1,
+    "timeout_seconds": 20,
+    "max_total_requests": 300,
+    "max_response_bytes": 5000000
+  },
+  "fields": [
+    {
+      "name": "Mobile Number",
+      "required": true,
+      "json_paths": [
+        "telephone",
+        "phone"
+      ],
+      "regex": "(?:\\+?\\d[\\d ().-]{6,}\\d)",
+      "regex_group": 0,
+      "transforms": [
+        "phone"
+      ],
+      "validate_regex": "^\\+?\\d{7,15}$"
+    },
+    {
+      "name": "Contact Name",
+      "required": false,
+      "default": "N/A",
+      "json_paths": [
+        "founder.name",
+        "employee.0.name"
+      ],
+      "transforms": [
+        "collapse_whitespace"
+      ]
+    },
+    {
+      "name": "Business Name",
+      "required": true,
+      "json_paths": [
+        "name"
+      ],
+      "transforms": [
+        "collapse_whitespace"
+      ]
+    },
+    {
+      "name": "Website",
+      "required": false,
+      "default": "N/A",
+      "json_paths": [
+        "sameAs.0",
+        "website",
+        "url"
+      ],
+      "transforms": [
+        "absolute_url",
+        "url"
+      ]
+    }
+  ],
+  "filters": {
+    "must_match_any": [],
+    "must_match_all": [],
+    "must_not_match": [],
+    "include_page_context": false
+  },
+  "dedupe_keys": [
+    [
+      "Mobile Number"
+    ],
+    [
+      "Business Name",
+      "Website"
+    ]
+  ],
+  "sources": [
+    {
+      "type": "web",
+      "name": "furvisor-singapore-grooming",
+      "start_urls": [
+        "https://furvisor.com/cities/singapore/grooming"
+      ],
+      "allowed_domains": [
+        "furvisor.com"
+      ],
+      "follow_patterns": [
+        "^https://furvisor\\.com/cities/singapore/grooming"
+      ],
+      "exclude_patterns": [
+        "/login",
+        "/account",
+        "/map(?:\\?|$)"
+      ],
+      "extract_url_patterns": [
+        "^https://furvisor\\.com/cities/singapore/grooming(?:-[^/?#]+)?/[^/?#]+$"
+      ],
+      "follow_selector": "main a[href]",
+      "item_selector": "main",
+      "modes": [
+        "jsonld"
+      ],
+      "jsonld_types": [
+        "HealthAndBeautyBusiness",
+        "LocalBusiness",
+        "ProfessionalService",
+        "Store"
+      ],
+      "max_pages": 230
+    }
+  ]
+}
